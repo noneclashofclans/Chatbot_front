@@ -32,7 +32,7 @@ const App = () => {
     e.target.value = null;
 
     try {
-      const response = await fetch('https://chatbot-back-beta.vercel.app/upload', {
+      const response = await fetch('https://chatbot-back-7rpl.vercel.app/upload', {
         method: 'POST',
         body: formData,
       });
@@ -55,7 +55,7 @@ const App = () => {
     if (!value) return setError('Please enter a question');
 
     try {
-      const response = await fetch('https://chatbot-back-beta.vercel.app/gemini-analyse', {
+      const response = await fetch('https://chatbot-back-7rpl.vercel.app/gemini-analyse', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: value, fileBuffer, fileType }),
