@@ -45,7 +45,7 @@ const App = () => {
     e.target.value = null;
 
     try {
-      const response = await fetch('https://chatbot-back-7rpl.vercel.app/upload', {
+      const response = await fetch('https://chatbot-back-11yn.vercel.app/upload', {
         method: 'POST',
         body: formData,
       });
