@@ -8,7 +8,6 @@ const App = () => {
   const [value, setValue] = useState('');
   const [response, setResponse] = useState('');
   const [error, setError] = useState('');
-  const [fileId, setFileId] = useState('')
 
   const randomValues = [
     'Does this image contain a cat?',
@@ -66,31 +65,38 @@ const App = () => {
   };
 
   const analyseImage = async () => {
-    if (!image) return setError('Please upload an image first!');
-    if (!value) return setError('Please enter a question');
+  if (!image) return setError('Please upload an image first!');
+  if (!value) return setError('Please enter a question');
 
-    try {
-      const response = await fetch('https://chatbot-back-7rpl.vercel.app/gemini-analyse', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: value,
-          fileBuffer: fileBuffer, 
-          fileType: fileType
-        }),
-      });
+  console.log("Sending:", {
+    prompt: value,
+    fileBuffer: fileBuffer?.substring(0, 30),
+    fileType: fileType
+  });
 
-      const data = await response.json();
-      if (!response.ok) {
-        setError(data.error || 'Something went wrong');
-      } else {
-        setResponse(data.reply);
-      }
-    } catch (err) {
-      console.error(err);
-      setError('Something went wrong during analysis');
+  try {
+    const response = await fetch('https://chatbot-back-11yn.vercel.app/gemini-analyse', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt: value,
+        fileBuffer: fileBuffer,
+        fileType: fileType
+      }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      setError(data.error || 'Something went wrong');
+    } else {
+      setResponse(data.reply);
     }
-  };
+  } catch (err) {
+    console.error(err);
+    setError('Something went wrong during analysis');
+  }
+};
+
 
   const clearSection = () => {
     setValue('');
