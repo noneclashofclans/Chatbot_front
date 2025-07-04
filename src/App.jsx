@@ -8,7 +8,7 @@ const App = () => {
   const [value, setValue] = useState('');
   const [response, setResponse] = useState('');
   const [error, setError] = useState('');
-  const [fileId, setFileId] = useState('');
+  const [fileId, setFileId] = useState('')
 
   const randomValues = [
     'Does this image contain a cat?',
@@ -26,60 +26,71 @@ const App = () => {
   };
 
   const uploadImage = async (e) => {
-  const formData = new FormData();
-  const file = e.target.files[0];
-  formData.append('file', file);
-  setImage(file);
-  e.target.value = null;
+    const file = e.target.files[0];
+    if (!file) return;
 
-  try {
-    const response = await fetch('https://chatbot-back-7rpl.vercel.app/upload', {
-      method: 'POST',
-      body: formData,
-    });
-
-    const data = await response.json();
-    if (response.ok) {
-      setFileId(data.fileBuffer);   // store base64 buffer
-      setFileType(data.fileType);   // keep the type
-      setError('');
-    } else {
-      setError(data.error || 'Upload failed');
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/heif'];
+    if (!allowedTypes.includes(file.type)) {
+      setError('Only JPG, JPEG, PNG, and HEIF images are allowed');
+      return;
     }
-  } catch (err) {
-    console.error(err);
-    setError('Something went wrong during upload');
-  }
-};
 
+    if (file.size > 100 * 1024 * 1024) {
+      setError('File too large. Upload must be under 100MB');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+    setImage(file);
+    e.target.value = null;
+
+    try {
+      const response = await fetch('https://chatbot-back-7rpl.vercel.app/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setFileBuffer(data.fileBuffer);
+        setFileType(data.fileType);
+        setError('');
+      } else {
+        setError(data.error || 'Upload failed');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Something went wrong during upload');
+    }
+  };
 
   const analyseImage = async () => {
-  if (!image) return setError('Please upload an image first!');
-  if (!value) return setError('Please enter a question');
+    if (!image) return setError('Please upload an image first!');
+    if (!value) return setError('Please enter a question');
 
-  try {
-    const response = await fetch('https://chatbot-back-7rpl.vercel.app/gemini-analyse', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        prompt: value,
-        fileBuffer: fileId,     
-        fileType: fileType
-      }),
-    });
+    try {
+      const response = await fetch('https://chatbot-back-7rpl.vercel.app/gemini-analyse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: value,
+          fileBuffer: fileBuffer, 
+          fileType: fileType
+        }),
+      });
 
-    const data = await response.json();
-    if (!response.ok) {
-      setError(data.error || 'Something went wrong');
-    } else {
-      setResponse(data.reply);
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.error || 'Something went wrong');
+      } else {
+        setResponse(data.reply);
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Something went wrong during analysis');
     }
-  } catch (err) {
-    console.error(err);
-    setError('Something went wrong during analysis');
-  }
-};
-
+  };
 
   const clearSection = () => {
     setValue('');
@@ -100,14 +111,14 @@ const App = () => {
           <p className='extra-info'>
             <span>
               <label htmlFor="files" className='uploading'>Upload File
-                <input type="file" id='files' accept='image/*' hidden onChange={uploadImage} />
+                <input type="file" id='files' accept=".jpg,.jpeg,.png,.heif,image/jpeg,image/png,image/heif" hidden onChange={uploadImage} />
               </label>
             </span>
           </p>
 
           <p className='ask'>What do you want to know about this image?</p>
           <div className='format-box'>
-            <p className='format'>(Upload <strong>.jpeg or .jpg</strong> file types only)</p>
+            <p className='format'>(Upload <strong>.jpeg, .jpg, .png, .heif</strong> under 100MB)</p>
           </div>
           <button className='bunny-button' onClick={giveAnswer} disabled={response}>Guess...</button>
 
