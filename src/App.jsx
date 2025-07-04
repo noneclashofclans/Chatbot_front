@@ -8,6 +8,7 @@ const App = () => {
   const [value, setValue] = useState('');
   const [response, setResponse] = useState('');
   const [error, setError] = useState('');
+  const [fileId, setFileId] = useState('');
 
   const randomValues = [
     'Does this image contain a cat?',
