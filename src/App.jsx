@@ -25,53 +25,60 @@ const App = () => {
   };
 
   const uploadImage = async (e) => {
-    const formData = new FormData();
-    const file = e.target.files[0];
-    formData.append('file', file);
-    setImage(file);
-    e.target.value = null;
+  const formData = new FormData();
+  const file = e.target.files[0];
+  formData.append('file', file);
+  setImage(file);
+  e.target.value = null;
 
-    try {
-      const response = await fetch('https://chatbot-back-7rpl.vercel.app/upload', {
-        method: 'POST',
-        body: formData,
-      });
-      const data = await response.json();
-      if (response.ok) {
-        setFileBuffer(data.fileBuffer); // <- new
-        setFileType(data.fileType);
-        setError('');
-      } else {
-        setError(data.error || 'Upload failed');
-      }
-    } catch (err) {
-      console.error(err);
-      setError('Something went wrong during upload');
+  try {
+    const response = await fetch('https://chatbot-back-7rpl.vercel.app/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      setFileId(data.fileBuffer);   // store base64 buffer
+      setFileType(data.fileType);   // keep the type
+      setError('');
+    } else {
+      setError(data.error || 'Upload failed');
     }
-  };
+  } catch (err) {
+    console.error(err);
+    setError('Something went wrong during upload');
+  }
+};
+
 
   const analyseImage = async () => {
-    if (!image) return setError('Please upload an image first!');
-    if (!value) return setError('Please enter a question');
+  if (!image) return setError('Please upload an image first!');
+  if (!value) return setError('Please enter a question');
 
-    try {
-      const response = await fetch('https://chatbot-back-7rpl.vercel.app/gemini-analyse', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: value, fileBuffer, fileType }),
-      });
+  try {
+    const response = await fetch('https://chatbot-back-7rpl.vercel.app/gemini-analyse', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt: value,
+        fileBuffer: fileId,     
+        fileType: fileType
+      }),
+    });
 
-      const data = await response.json();
-      if (!response.ok) {
-        setError(data.error || 'Something went wrong');
-      } else {
-        setResponse(data.reply);
-      }
-    } catch (err) {
-      console.error(err);
-      setError('Something went wrong during analysis');
+    const data = await response.json();
+    if (!response.ok) {
+      setError(data.error || 'Something went wrong');
+    } else {
+      setResponse(data.reply);
     }
-  };
+  } catch (err) {
+    console.error(err);
+    setError('Something went wrong during analysis');
+  }
+};
+
 
   const clearSection = () => {
     setValue('');
