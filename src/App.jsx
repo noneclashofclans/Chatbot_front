@@ -47,7 +47,7 @@ const App = () => {
     e.target.value = null;
 
     try {
-      const response = await fetch('http://localhost:8000/upload', {
+      const response = await fetch('https://chatbot-back-11yn.vercel.app/upload', {
         method: 'POST',
         body: formData,
       });
@@ -75,7 +75,7 @@ const App = () => {
   setResponse('');
 
   try {
-    const response = await fetch('http://localhost:8000/gemini-analyse', {
+    const response = await fetch('https://chatbot-back-11yn.vercel.app/gemini-analyse', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
