@@ -8,15 +8,17 @@ const App = () => {
   const [value, setValue] = useState('');
   const [response, setResponse] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false); // for loading spinner
+
 
   const randomValues = [
     'Does this image contain a cat?',
     'Is this the image of a dog?',
     'Is this a cool sports car?',
-    'Does this image contain a fish?',
-    'Does this image contain a horse?',
-    'Does this image contain a car?',
-    'Does this image contain a bike?',
+    'Is this a cute sea animal?',
+    'Is it used everyday?',
+    'Is this the image of a famous person!?',
+    'Is it a cool place!?',
   ];
 
   const giveAnswer = () => {
@@ -45,7 +47,7 @@ const App = () => {
     e.target.value = null;
 
     try {
-      const response = await fetch('https://chatbot-back-11yn.vercel.app/upload', {
+      const response = await fetch('http://localhost:8000/upload', {
         method: 'POST',
         body: formData,
       });
@@ -68,14 +70,12 @@ const App = () => {
   if (!image) return setError('Please upload an image first!');
   if (!value) return setError('Please enter a question');
 
-  console.log("Sending:", {
-    prompt: value,
-    fileBuffer: fileBuffer?.substring(0, 30),
-    fileType: fileType
-  });
+  setLoading(true);
+  setError('');
+  setResponse('');
 
   try {
-    const response = await fetch('https://chatbot-back-11yn.vercel.app/gemini-analyse', {
+    const response = await fetch('http://localhost:8000/gemini-analyse', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -93,7 +93,9 @@ const App = () => {
     }
   } catch (err) {
     console.error(err);
-    setError('Something went wrong during analysis');
+    setError('You have hit the free plan. Retry after sometime, or try to upload an image with a lower size');
+  } finally {
+    setLoading(false);
   }
 };
 
@@ -111,8 +113,16 @@ const App = () => {
       <div className='app'>
         <section className='search-section'>
           <div className='image-container'>
-            {image && <img src={URL.createObjectURL(image)} alt='uploaded' />}
+            {image ? (
+              <div className='preview-wrapper'>
+                <img src={URL.createObjectURL(image)} alt='uploaded' className='preview-img' />
+                <p className='filename'>{image.name}</p>
+              </div>
+            ) : (
+              <p className='placeholder'>Upload an image to get started</p>
+            )}
           </div>
+
 
           <p className='extra-info'>
             <span>
@@ -135,7 +145,17 @@ const App = () => {
               className='input-sz'
               onChange={e => setValue(e.target.value)}
             />
-            {(!response && !error) && <button onClick={analyseImage}>Ask Bunny</button>}
+
+            {(!response && !error) && (
+              loading ? (
+                <button disabled className='loading-btn'>
+                  <span className='spinner' /> Analyzing...
+                </button>
+              ) : (
+                <button onClick={analyseImage}>Ask Bunny</button>
+              )
+            )}
+
             {(response || error) && <button onClick={clearSection}>Clear section</button>}
           </div>
 
